@@ -210,7 +210,10 @@ export default function Chatbot() {
   - Provide **clear and concise explanations** when users ask about specific features.
   - **Guide users** through the webinar creation process **logically and step-by-step**.
   - Always **suggest the next step** to keep them progressing smoothly.
-  - Do not say "we are creating/generating slides etc" or "knowledgeBase generation is under process", but rather always culminate your response with "RENDER: nextStep" to help user click "YES" on pop-up to render the step/process. 
+  - Strictly follow the response formats, specially the text "delimited by <>".
+  - Do not say "we are creating/generating slides etc" or "knowledgeBase generation is under process", but rather always culminate your response with text/commands delimited by <>, to help user click "YES" on pop-up to render the step/process. 
+  - Do not forget to include the text/commands delimited by <>.
+
       
 
   ### Next Step Suggestion Guidelines:
@@ -256,7 +259,7 @@ export default function Chatbot() {
   4.  **Submit Detials and Generate KnowledgeBase**  
      
      - Once Details Confirmed, Explain that now **knowledge base** will be generated which helps AI generate relevant content for webinar.  
-     - And suggest generating knowledgeBase, strictly with following "Correct Response" delimited by <>. Do not use any other formats for response (an example of incorrect Response is given below) as this format will be used to create a pop-up for user to finally Submit/Save Details to generate KnowledgeBase, and the Details (title, description etc) mentioned in this response will be extracted and stored for next steps):
+     - then end your response strictly with following "Correct Response" delimited by <>. It will create a pop-up for user to finally Submit/Save Details to generate KnowledgeBase. Do not use any other formats for response (an example of incorrect Response is given below):
 
     - Incorrect Response:
       **Title**: title
@@ -275,23 +278,29 @@ export default function Chatbot() {
 
   5. **Generating Slides**  
     - Once knowledgeBase generated with prev response: 
-     a. Inform users that AI will generate slides based on the knowledge-base.  
-     b. Suggest moving to the next step with following response: (It will create a pop-up for user to generate knowledgeBase):
+     a. Inform users that now AI will generate slides based on the knowledge-base.  
+     b. then end your response with following command delimited by <>: (It will create a pop-up for user to generate Slides):
 
 <   RENDER: generateSlides >
   
-  6. **Generating Webinar Script**  
-    - Once Slides generated: 
-     a. Inform users that AI will generate a structured script based on slides.  
-     b. Suggest moving to the next step with following response delimited by <>: (It will create a pop-up for user to generate knowledgeBase):
 
+  6. **Saving Slides**  
+    - Once slides generated with prev response: 
+    Inform User that he has been navigated to Slides Section and he needs to Save Slides. He can also edit slides. 
+
+
+
+  7. **Generating Webinar Script**  
+    - Once Slides saved: 
+     a. Inform users that now AI will generate a structured script based on slides.  
+     b. then end your response with following command delimited by <>: (It will create a pop-up for user to navigate to Script Section):
 
 <   RENDER: generateScript >
 
 
-  7. **Final Review**  
+  8. **Final Review**  
     - Once Step 6 is done: 
-    Inform User that they need to generate script manually for each slide. 
+    Inform User that he has been navigated to Script Section and he needs to generate script manually for each slide. 
     Also inform User that they need to select Avatar and themes manually from the relevent section.
     Inform the user that they should finally visit Webinar Section for final review**.
   
@@ -299,14 +308,15 @@ export default function Chatbot() {
   
   ### If a user seems confused, **reassure them** and summarize where they are in the process.
   ### If user seem unresponsive/stuck, ask them to regerate previous response to **RENDER** previous step again.
-  
   ### Response Formatting:
   - Keep responses **short, friendly, and professional**.
   - Always suggest the next step **only when relevant**.
   - If no step is needed, just provide an explanation.
   - always keep track of the steps.
-  - Strictly follow the response formats, specially the text "delimited by < >".
-  - Do not forget to include the text/phrase delimited by <>.
+  
+  ### Reminder:
+  - Strictly follow the response formats, specially the text "delimited by <>".
+  - Do not forget to include the text/commands delimited by <>.
   `
 
 
@@ -357,38 +367,51 @@ const extractWebinarDetails = (message: any) => {
   if (!message) return
 
   // const regex = /TITLE:\s*"([^"]*)"\s*DESCRIPTION:\s*"([^"]*)"\s*TOPICS:\s*"([^"]*)"\s*PRODUCT:\s*"([^"]*)"\s*BONUSES:\s*"([^"]*)"\s*VALUE:\s*"([^"]*)"/;
-  // const regex = /TITLE:\s*"([^"]+)"[\s\S]*?DESCRIPTION:\s*"([^"]+)"[\s\S]*?TOPICS:\s*"([^"]+)"[\s\S]*?PRODUCT:\s*"([^"]+)"[\s\S]*?BONUSES:\s*"([^"]+)"[\s\S]*?VALUE:\s*"([^"]+)"/;
-  // const details = message.match(regex);
-  // console.log("Extractied Details:", details);
+  const regex = /TITLE:\s*"([^"]+)"[\s\S]*?DESCRIPTION:\s*"([^"]+)"[\s\S]*?TOPICS:\s*"([^"]+)"[\s\S]*?PRODUCT:\s*"([^"]+)"[\s\S]*?BONUSES:\s*"([^"]+)"[\s\S]*?VALUE:\s*"([^"]+)"/;
+  const details = message.match(regex);
+  console.log("Extractied Details:", details);
 
-
-// Helper function to extract values based on a key
-const extractValue = (text: string, key: string) => {
-  const match = text.match(new RegExp(`${key}:\\s*"([^"]+)"`));
-  return match ? match[1] : "Not found";
-};
-// Extract each detail separately
-const details  = {
-  title: extractValue(message, "TITLE"),
-  description: extractValue(message, "DESCRIPTION"),
-  topics: extractValue(message, "TOPICS"),
-  product: extractValue(message, "PRODUCT"),
-  bonuses: extractValue(message, "BONUSES"),
-  value: extractValue(message, "VALUE"),
-};
-
-if (message) console.log("Extractied Details:", details);
+  if (message) console.log("Extractied Details:", details);
 
   if (details) {
     setWebinarDetails({
-      description: details.description,
-      topics: details.topics.split(","), // Convert to array
-      product: details.product,
-      bonuses: details.bonuses,
-      value: details.value,
+      description: details[1],
+      topics: details[2].split(","), // Convert to array
+      product: details[3],
+      bonuses: details[4],
+      value: details[5],
       avoidTopics: "",
     });
   }
+
+
+// // Helper function to extract values based on a key
+// const extractValue = (text: string, key: string) => {
+//   const match = text.match(new RegExp(`${key}:\\s*"([^"]+)"`));
+//   return match ? match[1] : "Not found";
+// };
+// // Extract each detail separately
+// const details  = {
+//   title: extractValue(message, "TITLE"),
+//   description: extractValue(message, "DESCRIPTION"),
+//   topics: extractValue(message, "TOPICS"),
+//   product: extractValue(message, "PRODUCT"),
+//   bonuses: extractValue(message, "BONUSES"),
+//   value: extractValue(message, "VALUE"),
+// };
+
+// console.log("Extractied Details:", details);
+
+//   if (details) {
+//     setWebinarDetails({
+//       description: details.description,
+//       topics: details.topics.split(","), // Convert to array
+//       product: details.product,
+//       bonuses: details.bonuses,
+//       value: details.value,
+//       avoidTopics: "",
+//     });
+//   }
 };
 
 // console.log('Webinar Details:', webinarDetails);

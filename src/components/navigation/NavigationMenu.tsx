@@ -72,6 +72,7 @@ export default function NavigationMenu({ onManageKnowledge }: NavigationMenuProp
       setWebinars(prev => [...prev, webinar]);
       setCurrentWebinarId(webinar.id);
       await initializeWebinar(webinar.id);
+      console.log('webinar id:', webinar.id);
       setIsWebinarDropdownOpen(false);
       setIsOpen(false);
     } catch (error) {
@@ -134,7 +135,8 @@ export default function NavigationMenu({ onManageKnowledge }: NavigationMenuProp
               </button>
 
               {isWebinarDropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 rounded-lg overflow-hidden shadow-lg z-50">
+                <div className="absolute top-full left-0 right-0  mt-2 bg-gray-800 rounded-lg shadow-lg z-50">
+                <div className="h-80 mt-2 overflow-auto  shadow-lg z-50">
                   {webinars.map((webinar) => (
                     <button
                       key={webinar.id}
@@ -145,6 +147,7 @@ export default function NavigationMenu({ onManageKnowledge }: NavigationMenuProp
                       {webinar.name}
                     </button>
                   ))}
+                  </div>
                   <button
                     onClick={handleCreateWebinar}
                     className="w-full px-4 py-2 text-left text-teal-400 hover:bg-gray-700 transition-colors border-t border-gray-700 bg-gray-800"
