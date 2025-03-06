@@ -124,18 +124,17 @@ export function SlideEditor() {
   // Components Rendering for Chatbot triggered functions
   const { presentStep } = useWebinarStore();
   console.log('Step in Slides:', presentStep);
-  // toast.warn('Generating Slides with AI');
 
   useEffect(() => {
     const generateSlidesForChatbot = async () => {
       await regenerateSlides();
       // await handleSave();
-      toast.warn('Slides Generated. Click SAVE');
+      toast.success('Slides Generated. Click on SAVE');
     }
-
     if (presentStep === "generateSlides")
       generateSlidesForChatbot();
-  }, [presentStep]); // Runs when step changes
+    
+  }, [presentStep]); 
 
 
 

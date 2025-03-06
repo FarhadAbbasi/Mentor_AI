@@ -77,7 +77,7 @@ export function AvatarSelection() {
       return;
     }
 
-    window.location.href = '/webinar-creation';
+    // window.location.href = '/webinar-creation';
   };
 
   if (loading) {

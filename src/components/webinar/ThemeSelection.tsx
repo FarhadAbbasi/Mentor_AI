@@ -72,7 +72,7 @@ export function ThemeSelection() {
       return;
     }
 
-    window.location.href = '/webinar-creation';
+    // window.location.href = '/webinar-creation';
   };
 
   if (loading) {
