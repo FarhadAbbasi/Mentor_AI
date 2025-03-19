@@ -57,14 +57,19 @@ export function ThemeSelection() {
   }, [currentWebinarId]);
 
   const handleSave = async () => {
+    console.log('THemes:', themes);
+    console.log('Saving theme:', selectedThemeId);
+    console.log('Webinar ID for theme:', selectedThemeId);
+    
     if (!currentWebinarId || !selectedThemeId) return;
 
     setSaving(true);
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('webinars')
       .update({ theme_id: selectedThemeId })
       .eq('id', currentWebinarId);
 
+    console.log('Saved theme data:', data);
     setSaving(false);
 
     if (error) {
@@ -108,9 +113,8 @@ export function ThemeSelection() {
             key={theme.id}
             whileHover={{ scale: 1.02 }}
             onClick={() => setSelectedThemeId(theme.id)}
-            className={`relative rounded-xl overflow-hidden group ${
-              selectedThemeId === theme.id ? 'ring-2 ring-teal-500' : ''
-            }`}
+            className={`relative rounded-xl overflow-hidden group ${selectedThemeId === theme.id ? 'ring-2 ring-teal-500' : ''
+              }`}
           >
             <div className="aspect-video w-full">
               <img

@@ -6,7 +6,7 @@ import { ScriptingEditor } from './scripting/ScriptingEditor';
 import { AvatarSelection } from './AvatarSelection';
 import { useWebinarStore } from '../../stores/webinarStore';
 import * as queries from '../../lib/database/queries';
-import { ReviewandRelease } from './ReviewandRelease';
+import { ReviewandRelease } from './VideoGeneration/ReviewandRelease';
 
 const WEBINAR_STEPS = [
   {
@@ -86,6 +86,11 @@ export function WebinarCreation() {
         }
 
         // Check avatar selection completion
+        if (webinar?.avatar_id) {
+          completedSteps.push(3);
+        }
+
+        // Check Video completion
         if (webinar?.avatar_id) {
           completedSteps.push(3);
         }

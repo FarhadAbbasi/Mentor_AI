@@ -323,6 +323,7 @@ export default function Chatbot() {
 
 
 
+  //----------------------------------  HANDLE Webinar Creation Steps  -------------------------->>
 
   const proceedToNextStep = () => {
     console.log('suggested step :', suggestedStep);
@@ -355,8 +356,6 @@ export default function Chatbot() {
   // console.log('present step:', presentStep);
 
 
-
-// Handle Saving KnowledgeBase From Chatbot User Inputs
 const [webinarDetails, setWebinarDetails] = useState <WebinarData>({
   description: "",
   topics: [],
@@ -417,6 +416,7 @@ const extractWebinarDetails = (message: any) => {
 
 };
 
+  //-----------------------------   Generate KnowledgeBase with Chatbot ------------------------->>
 
   const generateKnowledgeBaseWithAI = async () => {
     console.log('FINAL Webinar Details are :', webinarDetails);
@@ -449,6 +449,7 @@ const extractWebinarDetails = (message: any) => {
 
 
 
+// _______________________________________  THIS IS UN_USED CODE _________________________________>>
 
   const handleNavigation = (response: string) => {
     const navigationMatch = response.match(/NAVIGATE_TO: ([\w-]+)/);
@@ -515,8 +516,12 @@ const extractWebinarDetails = (message: any) => {
       }
     }, 500);
   };
+// _______________________________________  THIS IS UN_USED CODE _________________________________<<
 
-  const checkBugIntent = (message: string) => {
+
+
+
+const checkBugIntent = (message: string) => {
     const bugKeywords = [
       'bug', 'issue', 'problem', 'error', 'broken', 'not working',
       'doesn\'t work', 'failed', 'crash', 'glitch', 'malfunction'
@@ -525,9 +530,6 @@ const extractWebinarDetails = (message: any) => {
     const lowercaseMessage = message.toLowerCase();
     return bugKeywords.some(keyword => lowercaseMessage.includes(keyword));
   };
-
-
-
 
 
   const handleSubmit = async (e: React.FormEvent) => {

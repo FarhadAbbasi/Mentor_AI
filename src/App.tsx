@@ -11,6 +11,7 @@ import { AuthForm } from './components/auth/AuthForm';
 import { supabase } from './lib/supabase';
 import { checkAdminStatus } from './lib/auth';
 import Chatbot from './components/Chatbot/Chatbot';
+import Streaming from './components/Chatbot/Streaming';
 
 export const ADMIN_PATH = '/admin';
 
@@ -43,10 +44,10 @@ export default function App() {
   }, []);
 
 
-  
+
   // Components Rendering for Chatbot triggered functions
-    useEffect(() => {
-    console.log('PRESENT Step in APP useEffect: ', presentStep);
+  useEffect(() => {
+    // console.log('PRESENT Step in APP useEffect: ', presentStep);
 
     const renderSectionForChatbot = () => {
       if (presentStep === "askDetails" || presentStep === "generateKnowledgeBase")
@@ -55,7 +56,7 @@ export default function App() {
         setActiveSection('webinar');
     }
     renderSectionForChatbot();
-  }, [presentStep]); 
+  }, [presentStep]);
 
 
 
@@ -169,6 +170,11 @@ export default function App() {
       <NavigationMenu onManageKnowledge={() => setActiveSection('knowledge')} />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {renderContent()}
+
+        {/* <div className='m-10 bg-slate-400'>
+          <Streaming />
+        </div> */}
+        
         <Chatbot />
       </div>
     </div>

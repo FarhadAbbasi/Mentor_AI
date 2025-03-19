@@ -82,7 +82,7 @@ export default function NavigationMenu({ onManageKnowledge }: NavigationMenuProp
 
   // Components Rendering for Chatbot triggered functions
   useEffect(() => {
-    console.log('PRESENT Step in Navigation-Menu: ', presentStep);
+    // console.log('PRESENT Step in Navigation-Menu: ', presentStep);
     toast.success('Creating Webinar with AI');
 
     const renderSectionForAI = async () => {

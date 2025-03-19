@@ -63,6 +63,7 @@ export async function getWebinarWithProgress(webinarId: string) {
         title,
         content,
         script,
+        type,
         order_index
       ),
       knowledge_sources!left (
@@ -121,12 +122,45 @@ export async function getAvatar(avatarId: string) {
 export async function getTheme(themeId: string) {
   const { data, error } = await supabase
     .from('themes')
-    .select('id, name, preview_url')
+    // .select('id, name, preview_url')
+    .select('*')
     .eq('id', themeId)
     .single();
 
   if (error) {
     console.error('Error fetching theme:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+
+export async function getVideoClips(webinar_id: string) {
+  const { data, error } = await supabase
+    .from('video_clips')
+    .select('heygen_video_id, video_url, thumbnail_url,order_index, duration')
+    .eq('webinar_id', webinar_id)
+    // .single();
+
+  if (error) {
+    console.error('Error fetching Videos:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+
+export async function getFinalVideo(webinar_id: string) {
+  const { data, error } = await supabase
+    .from('final_videos')
+    .select('video_id, url, duration')
+    .eq('webinar_id', webinar_id)
+    // .single();
+
+  if (error) {
+    console.error('Error fetching Videos:', error);
     throw error;
   }
 
