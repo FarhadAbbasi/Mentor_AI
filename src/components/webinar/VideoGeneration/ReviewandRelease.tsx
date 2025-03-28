@@ -61,9 +61,11 @@ export function ReviewandRelease() {
         }
 
         // Fetching video Clips, if any
-        const videoData = await queries.getVideoClips(currentWebinarId);
-        if (videoData) setVideoStatus(videoData);
-        console.log('Video Clips Data: ', videoData);
+        if (data.video_id) {  // Fetching Final Video, if any
+          const videoData = await queries.getVideoClips(currentWebinarId);
+          if (videoData) setVideoStatus(videoData);
+          console.log('Video Clips Data: ', videoData);
+        }
 
         if (data.video_id) {  // Fetching Final Video, if any
           const videoData = await queries.getFinalVideo(currentWebinarId);
@@ -871,7 +873,7 @@ export function ReviewandRelease() {
                     <button className='m-4 p-1 text-teal-500 border-b hover:bg-slate-700'>
                       <a href={landingPageData.admin_url} target='blank'> Admin Page URL </a>
                     </button>
-                    <h1 className='m-6 p-2 rounded-lg bg-slate-900 text-slate-100 flex'><p className='px-2 text-teal-500'> 
+                    <h1 className='m-6 p-2 rounded-lg bg-slate-900 text-slate-100 flex'><p className='px-2 text-teal-500'>
                       Website Name: </p> {landingPageData.name || 'my-site-name.com'} </h1>
 
                   </div>}
