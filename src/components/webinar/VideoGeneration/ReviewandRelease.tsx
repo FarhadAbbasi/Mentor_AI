@@ -73,12 +73,6 @@ export function ReviewandRelease() {
           console.log('Final Video Data: ', videoData);
         }
 
-        if (data.user_id) {  // Fetching Landing Page URL, if any
-          const landing_page_data = await queries.getLandingPageData(data.user_id);
-          if (landing_page_data.url) setLandinPageData(landing_page_data);
-        }
-
-
       } catch (err) {
         console.error('Error fetching webinar data:', err);
         setError('Failed to fetch webinar data. Please try again.');
@@ -440,6 +434,14 @@ export function ReviewandRelease() {
     console.log('Save landing page response in R&R :', response);
   }
 
+  const fetchLandingPage = async () => {
+    if (webinarData.user_id) {  // Fetching Landing Page URL, if any
+      const landing_page_data = await queries.getLandingPageData(webinarData.user_id);
+      console.log('Landing page data:', landingPageData);
+      if (landing_page_data.url) setLandinPageData(landing_page_data);
+    }
+
+  }
 
 
 
@@ -830,6 +832,12 @@ export function ReviewandRelease() {
             <h3 className="m-2 text-xl font-semibold"> My Landing Page </h3>
             <div className='flex-col p-2 bg-gray-800 rounded-lg m-2 overflow-auto scrollbar-hidden '>
               <div className='flex-col'>
+
+                <button className="m-4 p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                  onClick={fetchLandingPage} > Get Landing Page Details
+                </button>
+
+
                 <div>
                   <input type='text' placeholder='Enter name of your Landing Page..' className='m-4 p-2 w-80 rounded-lg bg-slate-700 text-white'
                     value={userSiteName}
@@ -849,7 +857,7 @@ export function ReviewandRelease() {
                   </select>
                 </div>
 
-                <div>
+                {landingPageData?.url && <div>
                   <button className="m-4 p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
                     onClick={() => createLandingPage()}
                     disabled={!!landingPageData.url}
@@ -865,7 +873,7 @@ export function ReviewandRelease() {
                   > Deploy Template Again </button>
 
 
-                  {landingPageData?.url && <div className='flex items-center'>
+                  <div className='flex items-center'>
 
                     <button className='m-4 p-1 bg-slate-700/20 text-teal-500 border-b hover:bg-slate-700'>
                       <a href={landingPageData.url} target='blank'> Website URL </a>
@@ -876,8 +884,8 @@ export function ReviewandRelease() {
                     <h1 className='m-6 p-2 rounded-lg bg-slate-900 text-slate-100 flex'><p className='px-2 text-teal-500'>
                       Website Name: </p> {landingPageData.name || 'my-site-name.com'} </h1>
 
-                  </div>}
-                </div>
+                  </div>
+                </div>}
 
               </div>
 

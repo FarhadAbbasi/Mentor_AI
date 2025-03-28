@@ -144,7 +144,7 @@ export async function getVideoClips(webinar_id: string) {
     // .single();
 
   if (error) {
-    console.error('Error fetching Videos:', error);
+    console.error('Error fetching VideoClips:', error);
     throw error;
   }
 
@@ -160,7 +160,7 @@ export async function getFinalVideo(webinar_id: string) {
     // .single();
 
   if (error) {
-    console.error('Error fetching Videos:', error);
+    console.error('Error fetching Final Video:', error);
     throw error;
   }
 
@@ -175,7 +175,7 @@ export async function getLandingPageData(user_id: any) {
     .single();
 
   if (error) {
-    console.error('Error fetching Videos:', error);
+    console.error('Error fetching Landing Page Data:', error);
     throw error;
   }
 
