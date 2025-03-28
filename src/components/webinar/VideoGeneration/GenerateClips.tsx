@@ -19,7 +19,7 @@ const generateVideo = async (templateId: string, variables: any) => {
 
         const result = await response.json();
         console.log("Video response is :", result.data);
-        toast.dark('Video generation is under process...');
+        toast.dark('Video generation request has been submitted');
 
         if (result.data?.video_id) {
             console.log("Video ID is :", result.data.video_id);
@@ -48,7 +48,7 @@ const getNewVariables = (variables: any) => {
             },
     ])
     );
-    console.log('New_Variables Ready for videoGen :', newVariables);
+    // console.log('New_Variables Ready for videoGen :', newVariables);
     return newVariables;
 }
 
@@ -67,7 +67,7 @@ export const GenerateWelcomeClip = async (request: any) => {
         // Price: request.price,
     }
     const variables = getNewVariables(filteredRequest);
-    console.log('Welcome variables: ', variables);
+    // console.log('Welcome variables: ', variables);
 
     const video_id = await generateVideo(templateId, variables);
     if (video_id) return { video_id, index: request.index }
@@ -88,10 +88,10 @@ export const GenerateAgendaClip = async (request: any) => {
         Script: request.script,
     }
     const variables = getNewVariables(filteredRequest);
-    console.log('Agenda variables: ', variables);
+    // console.log('Agenda variables: ', variables);
 
     const video_id = await generateVideo(templateId, variables);
-    if (video_id) return { video_id, order_index: request.index }
+    if (video_id) return { video_id, index: request.index }
 }
 
 
@@ -107,10 +107,10 @@ export const GenerateContentClip = async (request: any) => {
         Script: request.script,
     }
     const variables = getNewVariables(filteredRequest);
-    console.log('Content variables: ', variables);
+    // console.log('Content variables: ', variables);
 
     const video_id = await generateVideo(templateId, variables);
-    if (video_id) return { video_id, order_index: request.index }
+    if (video_id) return { video_id, index: request.index }
 }
 
 
@@ -123,10 +123,10 @@ export const GenerateOfferClip = async (request: any) => {
         Price: request.price,
     }
     const variables = getNewVariables(filteredRequest);
-    console.log('Offer variables: ', variables);
+    // console.log('Offer variables: ', variables);
 
     const video_id = await generateVideo(templateId, variables);
-    if (video_id) return { video_id, order_index: request.index }
+    if (video_id) return { video_id, index: request.index }
 }
 
 
@@ -141,17 +141,17 @@ export const GenerateClosingClip = async (request: any) => {
         Script: request.script,
     }
     const variables = getNewVariables(filteredRequest);
-    console.log('Closing variables: ', variables);
+    // console.log('Closing variables: ', variables);
 
     const video_id = await generateVideo(templateId, variables);
-    if (video_id) return { video_id, order_index: request.index }
+    if (video_id) return { video_id, index: request.index }
 }
 
 //////////////////////////////////   GENERATE FINAL VIDEO   ///////////////////////////////////////
 
 
 
-export async function mergeVideos(videoClips: any) {
+export async function mergeVideos(videoClips: any, transition: string) {
 
     // const videoClips = [
     //     { url: 'clip1.mp4', duration: 4 },
@@ -165,7 +165,7 @@ export async function mergeVideos(videoClips: any) {
             asset: { type: 'video', src: clip.video_url },
             start: currentStart,
             length: clip.duration,
-            transition: index > 0 ? { in: "fade", out: "fade" } : undefined // Add transitions
+            transition: index > 0 ? { in: transition, out: transition } : undefined // Add transitions
         };
 
         currentStart += clip.duration; // Move start time for the next clip
@@ -197,7 +197,6 @@ export async function mergeVideos(videoClips: any) {
     const data = await response.json();
     console.log('ShotStack Response:', data);
     if (data.response.id) {
-        toast.success('Final video is ready now!');
         return data.response.id; // This is the render ID
     }
 
@@ -235,8 +234,9 @@ export const checkFinalVideoStatus = async (renderId: string, setFinalVideo: any
 
     const videoData = await checkRenderStatus(renderId);
     if (videoData?.status === 'done') {
-        console.log('✅ Video is ready:', videoData);
+        console.log(' Video is ready:', videoData);
         setFinalVideo(videoData);
+        toast.success(' Final video is ready now!');
         return videoData;
     } else {
         setTimeout(() => checkFinalVideoStatus(renderId, setFinalVideo), 30000); // Wait 30 seconds and check again

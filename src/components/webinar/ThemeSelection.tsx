@@ -10,7 +10,7 @@ interface Theme {
   preview_url: string;
 }
 
-export function ThemeSelection() {
+export function ThemeSelection({ onComplete }: { onComplete?: () => void }) {
   const [themes, setThemes] = useState<Theme[]>([]);
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,6 +71,7 @@ export function ThemeSelection() {
 
     console.log('Saved theme data:', data);
     setSaving(false);
+    onComplete && onComplete();
 
     if (error) {
       console.error('Error saving theme:', error);

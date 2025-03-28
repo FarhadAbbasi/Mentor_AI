@@ -6,15 +6,16 @@ import { Slide } from '../../../types/webinar';
 import * as slidesDB from '../../../lib/database/slides';
 import { toast, ToastContainer } from 'react-toastify';
 import { checkFinalVideoStatus, GenerateAgendaClip, GenerateClosingClip, GenerateContentClip, GenerateOfferClip, GenerateWelcomeClip, mergeVideos, pollUntilReady } from './GenerateClips';
-import { saveFinalVideo, saveFinalVideoId, saveVideoClips } from '../../../lib/database/videoClips';
+import { saveFinalVideo, saveFinalVideoId, saveLandingPage, saveVideoClips } from '../../../lib/database/videoClips';
 import { ArrowDown, ArrowDownAZIcon, CheckCircle2, Download, TicketCheckIcon } from 'lucide-react';
-
+import ShotStackTransitions from './ShotStackTransitions';
 
 export function ReviewandRelease() {
   const { currentWebinarId } = useWebinarStore();
   const [webinarData, setWebinarData] = useState<any>(null);
   const [avatar, setAvatar] = useState<any>(null);
   const [theme, setTheme] = useState<any>(null);
+  const [name, setName] = useState('');
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingVideos, setLoadingVideos] = useState(false);
@@ -27,7 +28,11 @@ export function ReviewandRelease() {
   const [videoID, setVideoID] = useState('');
   const [videoStatus, setVideoStatus] = useState<any>([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [selectedTransition, setSelectedTransition] = useState('reveal');
   const [finalVideo, setFinalVideo] = useState<any>([]);
+  const [userSiteName, setUserSiteName] = useState<string | null>();
+  const [websiteTemplateName, setWebsiteTemplateName] = useState<string | null>(null);
+  const [landingPageData, setLandinPageData] = useState<any | null>(null);
 
 
   useEffect(() => {
@@ -37,6 +42,7 @@ export function ReviewandRelease() {
 
       try {
         const data = await queries.getWebinarWithProgress(currentWebinarId);
+        data.slides.sort((a: any, b: any) => a.order_index - b.order_index);
         console.log('Webinar Data in Review and Release', data);
         setWebinarData(data);
         // setSlides(data.slides);
@@ -54,16 +60,22 @@ export function ReviewandRelease() {
           setTemplateID(themeData.agenda_template_id);
         }
 
-        // Try fetching videos, if any
+        // Fetching video Clips, if any
         const videoData = await queries.getVideoClips(currentWebinarId);
         if (videoData) setVideoStatus(videoData);
-        console.log('Video Data: ', videoData);
+        console.log('Video Clips Data: ', videoData);
 
-        if (data.video_id) {
+        if (data.video_id) {  // Fetching Final Video, if any
           const videoData = await queries.getFinalVideo(currentWebinarId);
           setFinalVideo(videoData[0]);
           console.log('Final Video Data: ', videoData);
         }
+
+        if (data.user_id) {  // Fetching Landing Page URL, if any
+          const landing_page_data = await queries.getLandingPageData(data.user_id);
+          if (landing_page_data.url) setLandinPageData(landing_page_data);
+        }
+
 
       } catch (err) {
         console.error('Error fetching webinar data:', err);
@@ -137,8 +149,6 @@ export function ReviewandRelease() {
   // retrieveTemplateDetails();
   // }, [templateID])
 
-  // console.log('index', slides[2].order_index);
-
 
   const handleGenerateVideos = async () => {
     if (!currentWebinarId || !webinarData?.slides?.length || !avatar?.heygen_avatar_id) {
@@ -149,11 +159,10 @@ export function ReviewandRelease() {
     setVideoStatus([]);
     try {
 
-
       // Prepare video generation payload
       const videoRequests = webinarData.slides.map((slide: any) => ({
         index: slide.order_index,
-        name: 'User_Name',
+        name: name || 'Mentor',
         avatar_id: avatar.heygen_avatar_id,
         type: slide.type,
         title: slide.title,
@@ -206,32 +215,35 @@ export function ReviewandRelease() {
       videoOutputs.sort((a, b) => a.index - b.index);
 
       const videoStatuses = await Promise.all(videoOutputs.map(async (video_output: any) => {
-        // const videoStatuses = await videoOutputs.map(async (video: string) => {
         console.log('Video Output:', video_output);
-        if (video_output) return await checkVideoStatus(video_output); // Assuming checkVideoStatus is an async function
-        console.log('Video Status:', videoStatus);
+
+        if (video_output) await checkVideoStatus(video_output); // Assuming checkVideoStatus is an async function
+
+        console.log('If comparison between:', videoOutputs.length, 'and', (video_output.index + 1));
+        // if (videoOutputs.length === (video_output.index + 1)) {
+        //   console.log('All Videos Generated. Click SAVE!');
+        //   console.log('Video Status before sorting:', videoStatus);
+        //   toast.success('All Videos Generated. Click SAVE!');
+        // }
         return null;
       })
       );
-      console.log('Video Statuses:', videoStatuses);
-      videoStatus.sort((a, b) => a.index - b.index);  // Sorting. It has been updated within checkVideoStatus function
+      videoStatus.sort((a, b) => a.index - b.index);  // Sorting. videoStatus has been updated within checkVideoStatus function
 
     } catch (err) {
       console.log('Error in Generate Videos is:', err);
+      setLoadingVideos(false);
     } finally {
       setLoadingVideos(false);
-      toast.success('All Videos Generated. Click SAVE!');
     }
 
   };
 
+
   // console.log('Video Status:', videoStatus);
 
-  // const checkVideoStatus = async (videoId: any) => {
   const checkVideoStatus = async (videoData: any) => {
     if (!videoData) return
-    // if (!videoID) return
-    // const videoId = videoID;
 
     const URL = `http://localhost:5000/api/checkVideoStatus/${videoData.video_id}`;
     try {
@@ -240,9 +252,9 @@ export function ReviewandRelease() {
 
       if (data.status === "completed") {
         console.log("Video URL:", data.video_url);
-        console.log("Video Data:", data);
-        toast.success('video Status:  COMPLETED!');
+        toast.success(' Video Status:  COMPLETED!');
         const updated_data = { ...data, index: videoData.index };
+        console.log('Video Data with index:', updated_data);
         setVideoStatus((prev: any) => [...prev, updated_data]);
       }
       else if (data.status === "failed") {
@@ -252,7 +264,7 @@ export function ReviewandRelease() {
 
       } else {
         console.log("Video is still processing. Checking again in 30 seconds...");
-        toast.warn(`video Status: ${data.status ? data.status : "PENDING!"}`);
+        toast.warn(`Video status: ${data.status ? data.status : "PENDING!"}`);
         setTimeout(() => checkVideoStatus(videoData), 30000); // Wait 30 seconds and check again
       }
     } catch (error) {
@@ -277,12 +289,13 @@ export function ReviewandRelease() {
     if (!currentWebinarId) return;
     console.log('webinarID in saveVideos', currentWebinarId);
     console.log('video Status in saveVideos', videoStatus);
+    videoStatus.sort((a: any, b: any) => a.index - b.index);  // Sort wrt index before saving 
 
     try {
       await saveVideoClips(currentWebinarId,
-        videoStatus.map((clip: any, index: number) => ({
+        videoStatus.map((clip: any) => ({
           heygen_video_id: clip.id,
-          order_index: index,
+          order_index: clip.index,
           video_url: clip.video_url,
           thumbnail_url: clip.thumbnail_url,
           duration: clip.duration,
@@ -296,12 +309,11 @@ export function ReviewandRelease() {
     }
   };
 
-  // console.log('Video Status:', videoStatus);
 
   const handleGenerateFinalVideo = async () => {
-    if (!videoStatus.length) { toast.error('Please generate video clips first.');  return; }
+    if (!videoStatus.length) { toast.error('Please generate video clips first.'); return; }
 
-    const final_video_id = await mergeVideos(videoStatus);
+    const final_video_id = await mergeVideos(videoStatus, selectedTransition);
     console.log('Final Video ID in R&R :', final_video_id);
     if (!final_video_id) { toast.error('Failed to generate final video. Please try again.'); return; }
     await checkFinalVideoStatus(final_video_id, setFinalVideo);
@@ -333,6 +345,102 @@ export function ReviewandRelease() {
   };
 
 
+
+
+  const [webhooks, setWebhooks] = useState<any>([]);
+  const fetchWebhooks = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/availableWebhookEvents");
+      const data = await response.json();
+      console.log("Webhooks :", data?.data);
+      const webhooks = data?.data;
+      setWebhooks(webhooks);
+
+    } catch (error) {
+      console.error("Error fetching webhooks:", error);
+    }
+  };
+
+  const websiteTemplates = [
+    { name: 'template_1', id: 'template_1' },
+    { name: 'website', id: 'template1' },
+    { name: 'binance', id: 'template2' },
+  ];
+  // console.log('Website Template Name :', websiteTemplateName);
+  const createLandingPage = async () => {
+    if (!currentWebinarId || websiteTemplateName === 'Select Web Template') return;
+    console.log('templateName:', websiteTemplateName);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/createLandingPage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          siteName: userSiteName,
+          templateName: websiteTemplateName,
+        }),
+      });
+
+      const deployResponse = await response.json();
+      console.log("Landing Page message:", deployResponse?.message);
+      console.log("Landing Page Data:", deployResponse.data);
+      if (deployResponse.data.url) {
+        setLandinPageData(deployResponse.data);
+        toast.success('Landing Page created successfully. Click SAVE URL!');
+      }
+    } catch (error) {
+      console.error("Error creating landing page:", error);
+      toast.error('Failed to create landing page. Please try again.');
+    }
+  }
+
+
+  const deployNewTemplate = async () => {
+    if (!currentWebinarId || !websiteTemplateName || websiteTemplateName === 'Select Web Template') {
+      toast.error('Please select a Web Template')
+      return;
+    }
+    console.log('templateName:', websiteTemplateName);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/deployLandingPage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          site_id: landingPageData.site_id,
+          templateName: websiteTemplateName,
+        }),
+      });
+
+      const deployResponse = await response.json();
+      console.log("Landing Page message:", deployResponse?.message);
+      console.log("Landing Page Data:", deployResponse.data);
+      if (deployResponse.data.url) {
+        setLandinPageData(deployResponse.data);
+        toast.success('Landing Page created successfully. Click SAVE URL!');
+      }
+    } catch (error) {
+      console.error("Error creating landing page:", error);
+      toast.error('Failed to create landing page. Please try again.');
+    }
+  }
+
+  // console.log('landing page data:', landingPageData);
+  const handleSaveLandingPage = async () => {
+    console.log('Landin Page in Save function', landingPageData);
+    if (!landingPageData) return;
+
+    const response = await saveLandingPage(webinarData.user_id, landingPageData);
+    console.log('Save landing page response in R&R :', response);
+  }
+
+
+
+
   const goToNextSlide = () => {
     if (webinarData.slides && currentSlideIndex < webinarData.slides.length - 1) {
       setCurrentSlideIndex(currentSlideIndex + 1);
@@ -356,6 +464,7 @@ export function ReviewandRelease() {
       setCurrentVideoIndex(currentVideoIndex - 1);
     }
   };
+
 
 
   if (loading) {
@@ -490,7 +599,7 @@ export function ReviewandRelease() {
 
           <section>
             <h3 className="text-xl font-semibold">Theme</h3>
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-gray-800 p-4 space-x-8 flex items-center  rounded-lg">
               {theme ? (
                 <div className='flex space-x-6 items-end'>
                   <div>
@@ -506,6 +615,11 @@ export function ReviewandRelease() {
               ) : (
                 <p className="text-gray-400">No theme selected.</p>
               )}
+              <div className='flex flex-col items-start bg-gray-700 p-4 rounded-lg'>
+                Enter Presenter's Name :
+                <input type='text' value={name} onChange={(e) => setName(e.target.value)}
+                  className="bg-gray-700 border m-4 px-4 py-2 rounded-lg" placeholder='Your Name' />
+              </div>
             </div>
           </section>
 
@@ -513,12 +627,12 @@ export function ReviewandRelease() {
             <h1 className='text-xl font-semibold'> Templates </h1>
             <div className="bg-gray-800 p-4 rounded-lg">
               <button
-                className="mx-4 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 hover:scale-[1.03]"
+                className="mx-4 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 "
                 onClick={() => fetchTemplates()} >
-                Fetch Templates
+                {loading ? 'Fetching Templates...' : 'Fetch Templates'}
               </button>
               <button
-                className="mx-4 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 hover:scale-[1.03]"
+                className="mx-4 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 "
                 onClick={() => setTemplates([])} >
                 Hide Templates
               </button>
@@ -544,7 +658,7 @@ export function ReviewandRelease() {
               </div> */}
               {/* This div is to be commented Out */}
 
-              <div className='bg-slate-900 '>
+              <div className='bg-slate-900 mt-4'>
                 {templateDetails && Object.entries(templateDetails).map(([key, value]) => (
                   <div key={key} className='m-4 p-2 w-96 flex space-x-6 border-b'>
                     <h1 className='min-w-20'> {key} : </h1>
@@ -577,26 +691,13 @@ export function ReviewandRelease() {
 
           <section>
             <h3 className="text-xl font-semibold">Actions</h3>
-            <div className="flex space-x-4">
+            <div className="p-4 space-x-4 bg-slate-700 flex rounded-lg">
               <button
                 onClick={handleGenerateVideos}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-500 hover:scale-[1.05]"
                 disabled={loadingVideos}
               >
-                {loadingVideos ? 'Generating Videos...' : 'Generate Videos'}
-              </button>
-              <button
-                onClick={handleGenerateFinalVideo}
-                className="px-4 py-2 bg-sky-700 text-white rounded-lg hover:bg-sky-800"
-                disabled={loadingVideos}
-              >
-                {loadingVideos ? 'Generating Final Video...' : 'Generate Final Video'}
-              </button>
-              <button
-                onClick={handleFinalSubmit}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                Final Submit
+                {loadingVideos ? 'Generating Videos...' : 'Generate Video Clips'}
               </button>
 
               {/* <input className='p-2 bg-slate-600 text-white w-80 rounded'
@@ -612,15 +713,20 @@ export function ReviewandRelease() {
           </section>
 
           <section>
-            {/* {videoStatus.length && <> */}
-            <h3 className="text-xl font-semibold">Videos</h3>
-            <div className="bg-gray-800 p-4 space-y-2 rounded-lg" >
-              {videoStatus.length === webinarData.slides.length &&
-                <div className='p-2 bg-emerald-600 flex rounded justify-self-end shadow-xl right-0 top-0'>
-                  <CheckCircle2 />  All Videos Generated!</div>}
+            {loadingVideos && <>
+              Videos are being generated. Please wait...
+            </>
+            }
 
-              {videoStatus?.length &&
-                <div className='m-2 p-4 w-[50%] flex flex-col justify-center'>
+
+            {videoStatus?.length && <>
+              <h3 className="text-xl font-semibold">Videos</h3>
+              <div className="bg-gray-800 p-4 space-y-2 rounded-lg" >
+                {videoStatus.length === webinarData.slides.length &&
+                  <div className='m-4 p-2 bg-emerald-600 flex rounded justify-self-end shadow-xl right-0 top-0'>
+                    <CheckCircle2 /> <span className='px-1' /> All video clips have been generated !</div>}
+
+                <div className='m-4 p-4 bg-slate-900 flex flex-col justify-center items-center'>
                   <div className="m-2 flex justify-center space-x-6 items-center">
                     <button
                       onClick={goToPreviousVideo}
@@ -637,22 +743,24 @@ export function ReviewandRelease() {
                     </button>
                   </div>
 
-                  <video src={videoStatus[currentVideoIndex]?.video_url} controls className='rounded'  >
+                  <video src={videoStatus[currentVideoIndex]?.video_url} controls className='m-4 w-[60%] rounded '  >
                     Your browser does not support video format
                   </video>
-                  <button className='m-4 p-2 w-40 bg-teal-600 rounded hover:bg-teal-700'>
-                    <a href={videoStatus[currentVideoIndex]?.video_url} target='blank'> Download Video Clip </a>
-                  </button>
+                  <div className='flex '>
+                    <button className='m-4 p-2 w-48 bg-teal-600 rounded hover:bg-teal-700'>
+                      <a href={videoStatus[currentVideoIndex]?.video_url} target='blank'> Download Video Clip </a>
+                    </button>
 
-                  <button
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                    onClick={handleSaveVideoClips}>
-                    Save Video Clips
-                  </button>
+                    <button
+                      className="m-4 py-2 w-44 bg-green-600 text-white rounded hover:bg-green-700"
+                      onClick={handleSaveVideoClips}>
+                      Save Video Clips
+                    </button>
+                  </div>
                 </div>
-              }
 
-              {/* {videoStatus?.length &&
+
+                {/* {videoStatus?.length &&
                 <div className='m-2 p-4 w-[30%] h-64 flex-col space-x-2 overflow-auto justify-center'>
                   {videoStatus?.map((video: any) => (
                     <div className='mb-4 p-2 bg-slate-900'>
@@ -665,38 +773,128 @@ export function ReviewandRelease() {
                     </div>
                   ))}
                 </div>
-              } */}
+               } */}
 
+                <h3 className="m-4"> Styling for final video </h3>
+                <ShotStackTransitions selectedTransition={selectedTransition} setSelectedTransition={setSelectedTransition} />
 
+                {finalVideo && <>
+                  <h3 className="m-4 text-xl font-semibold">Final Video </h3>
+                  <div className='m-4 p-4 bg-slate-900 flex flex-col items-center'>
 
-              {finalVideo && <>
-                <div className='m-2 p-4 w-[70%] flex flex-col justify-center'>
-                  <video src={finalVideo?.url} controls className='rounded'  >
-                    Your browser does not support video format
-                  </video>
-                  <button className='m-4 p-2 w-40 bg-teal-600 rounded hover:bg-teal-700'>
-                    <a href={finalVideo?.url} target='blank'> Download Final Video </a>
-                  </button>
+                    <video src={finalVideo?.url} controls className='m-4 w-[70%] rounded'  >
+                      Your browser does not support video format
+                    </video>
+                    <div>
+                      <button className='m-4 p-2 w-48 bg-teal-600 rounded hover:bg-teal-700'>
+                        <a href={finalVideo?.url} target='blank'> Download Final Video </a>
+                      </button>
+                      <button
+                        className="m-4 p-2 w-44 bg-green-600 text-white rounded hover:bg-green-700"
+                        onClick={handleSaveFinalVideo}>
+                        Save Final Video
+                      </button>
+                    </div>
+                  </div>
+
+                </>}
+
+              </div>
+            </>}
+          </section>
+
+          <section>
+            {videoStatus.length && <>
+              <h3 className="m-2 text-xl font-semibold">Final Actions</h3>
+              <div className='bg-gray-800 p-4 rounded-lg space-y-4 space-x-4'>
+                <button
+                  onClick={handleGenerateFinalVideo}
+                  className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-500 hover:scale-[1.05]"
+                  disabled={loadingVideos}
+                >
+                  {loadingVideos ? 'Generating Final Video...' : 'Generate Final Video'}
+                </button>
+                <button
+                  onClick={handleFinalSubmit}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 hover:scale-[1.05]"
+                >
+                  Final Submit
+                </button>
+              </div>
+            </>}
+          </section>
+
+          <section>
+            <h3 className="m-2 text-xl font-semibold"> My Landing Page </h3>
+            <div className='flex-col p-2 bg-gray-800 rounded-lg m-2 overflow-auto scrollbar-hidden '>
+              <div className='flex-col'>
+                <div>
+                  <input type='text' placeholder='Enter name of your Landing Page..' className='m-4 p-2 w-80 rounded-lg bg-slate-700 text-white'
+                    value={userSiteName}
+                    onChange={(e) => setUserSiteName(e.target.value)}
+                  />
+
+                  <select className='m-4 p-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700'
+                    value={websiteTemplateName || 'Select Template'}
+                    onChange={(e) => setWebsiteTemplateName(e.target.value)}
+                  >
+                    <option> Select Web Template </option>
+                    {websiteTemplates?.map((template) => (
+                      <option key={template.name}>
+                        {template.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <button
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  onClick={handleSaveFinalVideo}>
-                  Save Final Video
-                </button>
-              </>}
+                <div>
+                  <button className="m-4 p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
+                    onClick={() => createLandingPage()}
+                    disabled={!!landingPageData.url}
+                  > Create Landing Page </button>
+
+                  <button className='m-4 p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700'
+                    onClick={handleSaveLandingPage}
+                  > Save Landing Page </button>
+
+                  <button className="m-4 p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
+                    onClick={() => deployNewTemplate()}
+                    disabled={!landingPageData.url}
+                  > Deploy Template Again </button>
 
 
+                  {landingPageData?.url && <div className='flex items-center'>
 
-              {/* <div className='flex-col'>
-                {videoStatus?.map((video, index) => (
-                  <video src={video.video_url} controls className='h-[800px] w-[800px] rounded' />
+                    <button className='m-4 p-1 bg-slate-700/20 text-teal-500 border-b hover:bg-slate-700'>
+                      <a href={landingPageData.url} target='blank'> Website URL </a>
+                    </button>
+                    <button className='m-4 p-1 text-teal-500 border-b hover:bg-slate-700'>
+                      <a href={landingPageData.admin_url} target='blank'> Admin Page URL </a>
+                    </button>
+                    <h1 className='m-6 p-2 rounded-lg bg-slate-900 text-slate-100 flex'><p className='px-2 text-teal-500'> 
+                      Website Name: </p> {landingPageData.name || 'my-site-name.com'} </h1>
+
+                  </div>}
+                </div>
+
+              </div>
+
+              <button className="m-4 p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                onClick={() => fetchWebhooks()}
+              > Fetch Webhook List </button>
+              <button className="m-4 p-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700/50"
+                onClick={() => setWebhooks(null)}
+              > Hide Webhook List </button>
+
+              <div className='m-2 p-4 bg-slate-700 rounded-lg'>
+                <h1 className='text-teal-300'> Avalable Webhooks:  </h1>
+                {webhooks?.map((webhook: any) => (
+                  <h1 className='font-sm text-slate-200'> {webhook} </h1>
                 ))}
-              </div> */}
-
-
+              </div>
             </div>
-            {/* </>} */}
+
+
           </section>
         </div>
       )}

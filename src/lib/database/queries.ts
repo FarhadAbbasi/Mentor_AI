@@ -139,7 +139,7 @@ export async function getTheme(themeId: string) {
 export async function getVideoClips(webinar_id: string) {
   const { data, error } = await supabase
     .from('video_clips')
-    .select('heygen_video_id, video_url, thumbnail_url,order_index, duration')
+    .select('heygen_video_id, video_url, thumbnail_url, order_index, duration')
     .eq('webinar_id', webinar_id)
     // .single();
 
@@ -166,6 +166,22 @@ export async function getFinalVideo(webinar_id: string) {
 
   return data;
 }
+
+export async function getLandingPageData(user_id: any) {
+  const { data, error } = await supabase
+    .from('landing_pages')
+    .select('url, admin_url, site_id')
+    .eq('user_id', user_id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching Videos:', error);
+    throw error;
+  }
+
+  return data;
+}
+
 
 
 

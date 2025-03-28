@@ -143,7 +143,8 @@ export default function App() {
             >
               ← Back to Dashboard
             </button>
-            <WebinarCreation />
+            {/* <WebinarCreation  /> */}
+            <WebinarCreation onComplete={() => setActiveSection('dashboard')} />
           </div>
         );
       default:

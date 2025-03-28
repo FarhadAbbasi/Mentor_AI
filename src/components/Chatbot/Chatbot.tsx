@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, X, Send, Loader2, Bug, HelpCircle, Wand2, FileQuestion, ChevronRight } from 'lucide-react';
+import { MessageSquare, X, Send, Loader2, Bug, HelpCircle, Wand2, FileQuestion, ChevronRight, ScanFaceIcon, Bot, BotIcon } from 'lucide-react';
 // import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { supabase } from '../../lib/supabase';
@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useWebinarStore } from '../../stores/webinarStore';
 import { toast, ToastContainer } from 'react-toastify';
 import { WebinarData } from '../../types/webinar';
+import { motion } from 'framer-motion';
 
 interface HighlightInfo {
   selector: string;
@@ -714,18 +715,29 @@ const checkBugIntent = (message: string) => {
   };
 
   if (!user) return null;
+  const [popup, setPopup] = useState(false);
 
   return (
     <>
     <ToastContainer/>
       {!isOpen && (
-        <button
+        <div>
+          { popup &&
+          <p className="fixed p-2 bottom-20 flex right-10 bg-gray-100 text-slate-900 border border-2xl border-teal-300 rounded-t-lg rounded-l-lg shadow-lg">
+          < BotIcon /> <span className='px-2' /> Hey..  Don't worry. I can  <p className='px-1 font-med text-teal-700'> handle </p>  Everything
+          </p> 
+          }
+          <motion.button
           onClick={() => setIsOpen(true)}
           data-tour="chatbot"
-          className="fixed bottom-6 right-6 bg-teal-500 text-black rounded-full p-3 shadow-lg hover:bg-teal-400 transition-colors"
-        >
+          className="fixed bottom-6 right-6 bg-teal-500 text-white rounded-full p-3 shadow-lg hover:bg-teal-400 transition-colors"
+          whileHover={{ scale: 1.1 }} 
+          onMouseEnter={()=> setPopup(true)}
+          onMouseLeave={()=> setPopup(false)}
+          >
           <MessageSquare className="h-6 w-6" />
-        </button>
+          </motion.button>
+        </div>
       )}
 
       {isOpen && (

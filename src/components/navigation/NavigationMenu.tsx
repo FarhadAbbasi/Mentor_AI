@@ -83,11 +83,11 @@ export default function NavigationMenu({ onManageKnowledge }: NavigationMenuProp
   // Components Rendering for Chatbot triggered functions
   useEffect(() => {
     // console.log('PRESENT Step in Navigation-Menu: ', presentStep);
-    toast.success('Creating Webinar with AI');
-
     const renderSectionForAI = async () => {
-      if (presentStep === "createWebinar")
-       await handleCreateWebinar();
+      if (presentStep === "createWebinar") {
+        await handleCreateWebinar();
+        toast.success('Creating Webinar with AI');
+      }
     }
     renderSectionForAI();
   }, [presentStep]); // Runs when step changes
@@ -96,7 +96,12 @@ export default function NavigationMenu({ onManageKnowledge }: NavigationMenuProp
 
   return (
     <>
-    <ToastContainer/>
+      <ToastContainer />
+      <button className="absolute px-4 pb-2  min-w-440 bg-slate-700 text-slate-300 rounded-t-lg rounded-l-lg shadow-xl top-4 right-4 cursor-pointer">
+        <p className='flex text-teal-400 font-sm'>WEBINAR: </p>  
+        {webinars.find(web => web.id === currentWebinarId)?.name || 'Select Webinar'}
+      </button>
+
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-4 left-4 z-50 p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
@@ -136,17 +141,17 @@ export default function NavigationMenu({ onManageKnowledge }: NavigationMenuProp
 
               {isWebinarDropdownOpen && (
                 <div className="absolute top-full left-0 right-0  mt-2 bg-gray-800 rounded-lg shadow-lg z-50">
-                <div className="h-80 mt-2 overflow-auto  shadow-lg z-50">
-                  {webinars.map((webinar) => (
-                    <button
-                      key={webinar.id}
-                      onClick={() => handleWebinarChange(webinar.id)}
-                      className={`w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors bg-gray-800 ${webinar.id === currentWebinarId ? 'bg-gray-700 text-white' : 'text-gray-300'
-                        }`}
-                    >
-                      {webinar.name}
-                    </button>
-                  ))}
+                  <div className="h-80 mt-2 overflow-auto  shadow-lg z-50">
+                    {webinars.map((webinar) => (
+                      <button
+                        key={webinar.id}
+                        onClick={() => handleWebinarChange(webinar.id)}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors bg-gray-800 ${webinar.id === currentWebinarId ? 'bg-gray-700 text-white' : 'text-gray-300'
+                          }`}
+                      >
+                        {webinar.name}
+                      </button>
+                    ))}
                   </div>
                   <button
                     onClick={handleCreateWebinar}

@@ -14,7 +14,12 @@ const WEBINAR_STRUCTURE = {
     style: 'Engaging and welcoming',
     timing: 'First 5-10% of webinar'
   },
-  story: {
+  agenda: {
+    purpose: 'create curiosity/interest and set expectations',
+    style: 'interesting and engaging',
+    timing: 'Early webinar phase'
+  },
+  content: {
     purpose: 'Build rapport and demonstrate transformation',
     style: 'Personal and relatable',
     timing: 'Early webinar phase'
@@ -41,6 +46,39 @@ const WEBINAR_STRUCTURE = {
   }
 };
 
+// const WEBINAR_STRUCTURE = {
+//   intro: {
+//     purpose: 'Hook audience and establish credibility',
+//     style: 'Engaging and welcoming',
+//     timing: 'First 5-10% of webinar'
+//   },
+//   story: {
+//     purpose: 'Build rapport and demonstrate transformation',
+//     style: 'Personal and relatable',
+//     timing: 'Early webinar phase'
+//   },
+//   pain: {
+//     purpose: 'Highlight problems and create urgency',
+//     style: 'Empathetic and understanding',
+//     timing: 'Before solution'
+//   },
+//   solution: {
+//     purpose: 'Present your unique methodology',
+//     style: 'Clear and authoritative',
+//     timing: 'Middle of webinar'
+//   },
+//   offer: {
+//     purpose: 'Present value proposition',
+//     style: 'Confident and compelling',
+//     timing: 'After solution'
+//   },
+//   close: {
+//     purpose: 'Drive action and handle objections',
+//     style: 'Urgent and persuasive',
+//     timing: 'End of webinar'
+//   }
+// };
+
 function getSlideContext(
   currentSlide: Slide,
   allSlides: Slide[],
@@ -64,17 +102,17 @@ Current Slide Context:
 
 Narrative Flow Status:
 ${hasIntroBeenDone ? '✓' : '×'} Introduction completed
-${hasStoryBeenTold ? '✓' : '×'} Story shared
+${hasStoryBeenTold ? '✓' : '×'} agenda shared
 ${hasPainBeenAddressed ? '✓' : '×'} Pain points addressed
 
 Previous Content Flow:
-${previousSlides
+${previousSlides && previousSlides
   .slice(-2)
   .map(s => `[${s.type.toUpperCase()}] ${s.title}: ${s.script || s.content}`)
   .join('\n')}
 
 Upcoming Content Preview:
-${upcomingSlides
+${upcomingSlides && upcomingSlides
   .map(s => `[${s.type.toUpperCase()}] ${s.title}: ${s.content}`)
   .join('\n')}`;
 }
@@ -106,9 +144,9 @@ Title: ${currentSlide.title}
 Content: ${currentSlide.content}
 
 Write a brief, natural script (2-3 sentences) that:
-1. Flows naturally from previous content
+1. Flows naturally from previous content (if not intro slide)
 2. Delivers the key message effectively
-3. Sets up upcoming content
+3. Sets up upcoming content (if not closing slide)
 4. Maintains consistent tone and energy
 5. Builds towards the ultimate offer
 

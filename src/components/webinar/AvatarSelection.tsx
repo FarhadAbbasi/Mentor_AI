@@ -13,7 +13,7 @@ interface Avatar {
   gender: 'male' | 'female';
 }
 
-export function AvatarSelection() {
+export function AvatarSelection( { onComplete }: { onComplete?: () => void } ) {
   const [avatars, setAvatars] = useState<Avatar[]>([]);
   const [selectedAvatarId, setSelectedAvatarId] = useState<string | null>(null);
   const [hoveredAvatarId, setHoveredAvatarId] = useState<string | null>(null);
@@ -71,6 +71,7 @@ export function AvatarSelection() {
       .eq('id', currentWebinarId);
 
     setSaving(false);
+    onComplete && onComplete();
 
     if (error) {
       console.error('Error saving avatar:', error);

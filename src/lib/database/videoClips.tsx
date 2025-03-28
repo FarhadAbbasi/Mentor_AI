@@ -69,7 +69,6 @@ export async function saveFinalVideoId(webinar_id: string | null, final_video_id
     .eq('id', webinar_id);
 
   console.log('Save final video data in webinar:', data);
-  toast.success('Saved Final Video ID');
 
   if (error) {
     console.error('Error saving Final Video :', error);
@@ -86,7 +85,7 @@ export async function saveFinalVideo(
   final_video: any
 ) {
   // if (!webinar_id || !final_video.length) return;
-  console.log('Video Data in Supabase Save videos', final_video);
+  console.log('Final Video in Supabase Save videos', final_video);
 
   // First delete existing Video
     await supabase
@@ -110,6 +109,44 @@ export async function saveFinalVideo(
   if (data) {
     console.log('Final Video Data in Supabase Save videos', data);
     toast.success('Saved Final Video');
+  }
+  if (error) throw error;
+  return data;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////
+export async function saveLandingPage(
+  user_id: string,
+  landing_page_data: any | null
+) {
+  if (!user_id || !landing_page_data) return;
+  console.log('Landing Page URL and User_id in Save to Supabase', landing_page_data, 'Id:', user_id);
+
+    // First delete existing Landing Page URL
+    await supabase
+    .from('landing_pages')
+    .delete()
+    .eq('user_id', user_id);
+
+  // Then insert new Landing Page URL
+  const { data, error } = await supabase
+    .from('landing_pages')
+    .insert([
+      {
+        user_id: user_id,
+        name: landing_page_data.name,
+        url: landing_page_data.url,
+        admin_url: landing_page_data.admin_url,
+        site_id: landing_page_data.site_id,
+      }
+    ])
+    .select();
+
+  if (data) {
+    console.log('Landing Page URL in Supabase Save videos', data);
+    toast.success('Saved Landing Page URL');
   }
   if (error) throw error;
   return data;

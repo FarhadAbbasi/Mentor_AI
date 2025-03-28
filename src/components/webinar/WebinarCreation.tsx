@@ -36,7 +36,7 @@ const WEBINAR_STEPS = [
   },
 ];
 
-export function WebinarCreation() {
+export function WebinarCreation({ onComplete }: { onComplete?: () => void }) {
   const [activeStep, setActiveStep] = useState(-1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const { presentStep, currentWebinarId } = useWebinarStore();
@@ -134,11 +134,11 @@ export function WebinarCreation() {
       case 0:
         return <SlideEditor />;
       case 1:
-        return <ThemeSelection />;
+        return <ThemeSelection onComplete={onComplete} />;
       case 2:
         return <ScriptingEditor />;
       case 3:
-        return <AvatarSelection />;
+        return <AvatarSelection onComplete={onComplete} />;
       default:
         return <ReviewandRelease />;
     }
