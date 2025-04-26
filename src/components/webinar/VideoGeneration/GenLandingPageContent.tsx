@@ -143,10 +143,10 @@ Your task is to:
 
 Guidelines:
 - Make the tone confident, helpful, emotionally resonant, and free of any needy language.
-- Content should be clear, easy to understand, engaging and for all levels (beginers, intermediate, advanced)
-- Use modern, professional wording with strong emotional and practical appeal.
+- Content should be clear, easy to understand, engaging for all levels (beginers, intermediate, advanced)
+- Use modern, professional wording with strong emotional and practical appeal for conversion.
 - Suggest the Tags specifically that best fit the context of the section for image hunting from unsplash websie. 
-- Each section should be designed to encourage signups or views.
+- Each section should be designed to encourage conversions i.e subscriptions or views.
 
 Now, analyze the following inputs and generate the final landing page JSON:
 
