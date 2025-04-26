@@ -33,7 +33,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       const isAdmin = checkAdminStatus(user); // Use the provided function to determine admin status
   
       // Insert the new user into the 'users' table (correct table name)
-      const { error: dbError } = await supabase.from('users').insert([
+      const { error: dbError } = await supabase
+      .from('users')
+      .insert([
         {
           id: user?.id, // Use the user's ID from Supabase auth
           email: user?.email,

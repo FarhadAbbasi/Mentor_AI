@@ -167,11 +167,11 @@ export async function getFinalVideo(webinar_id: string) {
   return data;
 }
 
-export async function getLandingPageData(user_id: any) {
+export async function getLandingPageData(webinar_id: string) {
   const { data, error } = await supabase
     .from('landing_pages')
-    .select('url, admin_url, site_id')
-    .eq('user_id', user_id)
+    .select('name, url, admin_url, site_id')
+    .eq('webinar_id', webinar_id)
     .single();
 
   if (error) {

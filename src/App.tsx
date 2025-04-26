@@ -46,9 +46,8 @@ export default function App() {
 
 
   // Components Rendering for Chatbot triggered functions
-  useEffect(() => {
+    useEffect(() => {
     // console.log('PRESENT Step in APP useEffect: ', presentStep);
-
     const renderSectionForChatbot = () => {
       if (presentStep === "askDetails" || presentStep === "generateKnowledgeBase")
         setActiveSection('knowledge');
