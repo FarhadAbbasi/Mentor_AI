@@ -280,7 +280,7 @@ export default function Chatbot() {
   5. **Generating Slides**  
     - Once knowledgeBase generated with prev response: 
      a. Inform users that now AI will generate slides based on the knowledge-base.  
-     b. then end your response with following command delimited by <>: (It will create a pop-up for user to generate Slides):
+     b. then end your response with following command delimited by <>. (It will create a pop-up for user to click "generate Slides") :
 
 <   RENDER: generateSlides >
   

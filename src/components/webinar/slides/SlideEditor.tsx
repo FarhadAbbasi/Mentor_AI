@@ -132,9 +132,9 @@ export function SlideEditor() {
       toast.success('Slides Generated. Click on SAVE');
     }
     if (presentStep === "generateSlides")
-      generateSlidesForChatbot();
-    
-  }, [presentStep]); 
+    generateSlidesForChatbot();
+
+  }, [presentStep]);
 
 
 

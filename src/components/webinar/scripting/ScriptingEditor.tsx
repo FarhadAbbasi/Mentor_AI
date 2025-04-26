@@ -145,7 +145,7 @@ export function ScriptingEditor() {
       console.error('Error marking scripting as complete:', error);
       return;
     }
-    window.location.href = '/webinar-creation';
+    // window.location.href = '/';
   };
 
 
