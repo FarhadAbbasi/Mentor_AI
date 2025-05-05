@@ -267,7 +267,7 @@ export default function Chatbot() {
       **Description**: description
 
     - Correct Response:
-<      TITLE: "title "
+<      TITLE: "title"
        DESCRIPTION: "description" 
        TOPICS: "topics"
        PRODUCT: "Product"
@@ -278,9 +278,10 @@ export default function Chatbot() {
 
 
   5. **Generating Slides**  
-    - Once knowledgeBase generated with prev response: 
-     a. Inform users that now AI will generate slides based on the knowledge-base.  
-     b. then end your response with following command delimited by <>. (It will create a pop-up for user to click "generate Slides") :
+    - Once knowledgeBase generated with prev response:
+     a. Ask user to wait for around 10 seconds untill he can see generated knowledgeBase on screen (as prev step takes time to generate knowledgeBase and without knowledgbase, generating slides may create a glitch or error)  
+     b. Inform users that now AI will generate slides based on the knowledge-base.  
+     c. then end your response with following command delimited by <>. (It will create a pop-up for user to click "generate Slides") :
 
 <   RENDER: generateSlides >
   
@@ -806,8 +807,11 @@ const checkBugIntent = (message: string) => {
 
 
             {suggestedStep && (
-              <div className='p-2 flex relative shadow right-0 bottom-0'>
-                <p>Next Step: {suggestedStep}. Do you want to proceed?</p>
+              <div className='py-3 px-4 flex relative border rounded-2xl shadow-lg right-0 bottom-0'>
+                <p className='text-sm text-slate-700'> Next Step: 
+                  <span className='p-1 font-semibold text-teal-600 text-base'> {suggestedStep} </span> 
+                  Do you want to proceed?
+                </p>
                 <button 
                 className="flex items-center space-x-2 mx-2 px-2 py- bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
                 onClick={ proceedToNextStep }>Yes</button>

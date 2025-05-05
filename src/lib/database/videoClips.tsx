@@ -92,10 +92,8 @@ export async function saveFinalVideoId(webinar_id: string | null, final_video_id
 
 export async function saveFinalVideo(
   webinar_id: string,
-  // final_video: Omit<FinalVideoData, 'id' | 'webinar_id' | 'created_at' | 'updated_at'>[]
   final_video: any
 ) {
-  // if (!webinar_id || !final_video.length) return;
   console.log('Final Video in Supabase Save videos', final_video);
 
   // First delete existing Video
@@ -110,12 +108,13 @@ export async function saveFinalVideo(
     .insert([
       {
         webinar_id,
-        video_id: final_video.video_id,
         url: final_video.url,
-        duration: final_video.duration,
+        // video_id: final_video.video_id,
+        // duration: final_video.duration,
       }
     ])
     .select();
+
 
   if (data) {
     console.log('Final Video Data in Supabase Save videos', data);
@@ -126,6 +125,25 @@ export async function saveFinalVideo(
 }
 
 
+export async function saveFinalVideoSubtitles(
+  webinar_id: string,
+  subtitlesUrl: string
+) {
+  console.log('Subtitles in Supabase Save subtitles', subtitlesUrl);
+
+  const { data, error } = await supabase
+    .from('final_videos')
+    .update({ subtitles: subtitlesUrl }) 
+    .eq('webinar_id', webinar_id)
+
+    if (data) {
+      console.log('Subtitles Saved in Supabase Save videos', data);
+      toast.success('Saved Subtitles for Final Video');
+    }
+    if (error) throw error;
+    return data;
+  }
+  
 
 ///////////////////////////////////////////////////////////////////////////
 

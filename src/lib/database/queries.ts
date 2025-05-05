@@ -155,7 +155,7 @@ export async function getVideoClips(webinar_id: string) {
 export async function getFinalVideo(webinar_id: string) {
   const { data, error } = await supabase
     .from('final_videos')
-    .select('video_id, url, duration')
+    .select('video_id, url, subtitles, duration')
     .eq('webinar_id', webinar_id)
     // .single();
 

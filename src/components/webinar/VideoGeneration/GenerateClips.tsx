@@ -40,7 +40,7 @@ const getNewVariables = (variables: any) => {
                 name: key,
                 type: 'text',
                 properties: { content: value },
-            } : 
+            } :
             {
                 name: key,
                 type: "character",
@@ -160,7 +160,7 @@ export async function mergeVideos(videoClips: any, transition: string) {
 
     console.log('videoClips:', videoClips);
     let currentStart = 0; // Track the start time dynamically
-    const timelineTracks = videoClips.map((clip, index) => {
+    const timelineTracks = videoClips.map((clip: any, index: any) => {
         const clipData = {
             asset: { type: 'video', src: clip.video_url },
             start: currentStart,
@@ -205,7 +205,7 @@ export async function mergeVideos(videoClips: any, transition: string) {
 
 
 const checkRenderStatus = async (renderId: string) => {
-    if(!renderId) return ;
+    if (!renderId) return;
 
     const response = await fetch(`https://api.shotstack.io/stage/render/${renderId}`, {
         headers: {
@@ -242,3 +242,114 @@ export const checkFinalVideoStatus = async (renderId: string, setFinalVideo: any
         setTimeout(() => checkFinalVideoStatus(renderId, setFinalVideo), 30000); // Wait 30 seconds and check again
     }
 };
+
+
+
+////////////////////    Generate Final Joined Video with FFmpeg  ////////////////////////////
+
+export async function requestVideoJoin({
+    webinarId,
+    clipUrls,
+    hasIntro = false,
+    hasOutro = false,
+  }: {
+    webinarId: string;
+    clipUrls: string[];
+    hasIntro?: boolean;
+    hasOutro?: boolean;
+  }) {
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/join-clips', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          webinarId,
+          clipUrls,
+          hasIntro,
+          hasOutro,
+        }),
+      });
+  
+      if (!response.ok) throw new Error('Failed to start video join job');
+  
+      const data = await response.json();
+    //   return data.jobId; // Use this for progress tracking
+      return data; // Use this for progress tracking
+    } catch (err) {
+      console.error('[Video Join Error]', err);
+      throw err;
+    }
+  }
+  
+
+////////////////////    Generate Podcast Video with FFmpeg  ////////////////////////////
+
+  // utils/api.ts
+export async function requestVideoSideBySide({
+    input1Url,
+    input2Url,
+  }: {
+    input1Url: string[];
+    input2Url: string[];
+  }) {
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/join-side-by-side', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input1Url,
+          input2Url,
+        }),
+      });
+  
+      if (!response.ok) throw new Error('Failed to start video join job');
+  
+      const data = await response.json();
+    //   return data.jobId; // Use this for progress tracking
+      return data; // Use this for progress tracking
+    } catch (err) {
+      console.error('[Video Join Error]', err);
+      throw err;
+    }
+  }
+
+
+  
+  ////////////////////    Generate Subtitles  ////////////////////////////
+
+export async function requestGenerateSubtitles({
+    webinarId,
+    videoUrl,
+  }: {
+    webinarId: string;
+    videoUrl: string;
+  }) {
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/generate-subtitles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          webinarId,
+          videoUrl,
+        }),
+      });
+  
+      if (!response.ok) throw new Error('Failed to start generate subtitles job');
+  
+      const data = await response.json();
+    //   return data.jobId; // Use this for progress tracking
+      return data; // Use this for progress tracking
+    } catch (err) {
+      console.error('[Subtitles generation Error]', err);
+      throw err;
+    }
+  }

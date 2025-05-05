@@ -26,7 +26,6 @@ export function ScriptingEditor() {
 
   const fetchSlides = async () => {
     if (!currentWebinarId) return;
-
     const { data, error } = await supabase
       .from('slides')
       .select('*')
@@ -37,7 +36,6 @@ export function ScriptingEditor() {
       console.error('Error fetching slides:', error);
       return;
     }
-
     setSlides(data || []);
     setLoading(false);
   };
@@ -48,63 +46,78 @@ export function ScriptingEditor() {
 
   const currentSlide = slides[currentSlideIndex];
 
-  const handleScriptChange = async (script: string) => {
-    if (!currentSlide) return;
 
-    const updatedSlides = slides.map((slide, index) =>
-      index === currentSlideIndex ? { ...slide, script } : slide
+  const handleScriptChange = async (script: string, slideIndex: number) => {
+    if (!currentSlide) return;
+    console.log('Slide INDEX in Script Change:', slideIndex);
+
+    const updatedSlides = slides.map((slide, index) => {
+      if (index === slideIndex) console.log('Slide in update slide:', slide);
+      return (index === slideIndex ? { ...slide, script } : slide)
+    }
     );
+    console.log('updatedslides: ', updatedSlides);
     setSlides(updatedSlides);
 
-    const { error } = await supabase
+    const id = slides[slideIndex].id;
+    console.log('Slide ID in Script Change:', id);
+    const { data, error } = await supabase
       .from('slides')
       .update({ script })
-      .eq('id', currentSlide.id);
+      .eq('id', id);
+
+    console.log('Updated Slide in supabase:', data);
 
     if (error) {
       console.error('Error saving script:', error);
     }
+
   };
 
 
 
-  const generateScript = async () => {
-    if (!currentSlide || !knowledgeBase) return;
-    console.log('slide index is :', currentSlideIndex);
+  const generateScript = async (slideIndex: number) => {
+    if (!slides.length || !knowledgeBase) return;
+    console.log('slide index is :', slideIndex);
 
+    const currntSlide = slides[slideIndex];
+    console.log('current slide:', currntSlide);
     setGenerating(true);
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + import.meta.env.VITE_OPEN_AI_KEY,
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: generateScriptPrompt(currentSlide, slides, currentSlideIndex, knowledgeBase)
-            },
-            {
-              role: 'user',
-              content: 'Write the script following the provided context and guidelines.'
-            }
-          ],
-          temperature: 0.7
-        })
-      });
 
-      const data = await response.json();
-      const script = data.choices[0].message.content;
-      console.log('Script for Slide "', currentSlideIndex, '" Is :', script);
-      await handleScriptChange(script);
-    } catch (error) {
-      console.error('Error generating script:', error);
-    } finally {
-      setGenerating(false);
-    }
+    if (currntSlide)
+      try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + import.meta.env.VITE_OPEN_AI_KEY,
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              {
+                role: 'system',
+                // content: generateScriptPrompt(currentSlide, slides, currentSlideIndex, knowledgeBase)
+                content: generateScriptPrompt(currntSlide, slides, slideIndex, knowledgeBase)
+              },
+              {
+                role: 'user',
+                content: 'Write the script following the provided context and guidelines.'
+              }
+            ],
+            temperature: 0.7
+          })
+        });
+
+        const data = await response.json();
+        const script = data.choices[0].message.content;
+        console.log('Script for Slide "', slideIndex, '" Is :', script);
+        await handleScriptChange(script, slideIndex);
+      } catch (error) {
+        console.error('Error generating script:', error);
+      } finally {
+        setGenerating(false);
+      }
   };
 
 
@@ -114,14 +127,22 @@ export function ScriptingEditor() {
   // UseEffect call, to render the Chatbot triggered functions
   useEffect(() => {
     console.log('Present Step in Scripting:', presentStep);
+
     const generateScriptForChatbot = async () => {
-      await fetchSlides();
-      if (slides.length === 0) return;
-          toast.success('Generate Scripts here One-By-One');
-          // await generateScript();
+        toast.success('Generating Script');
+        for (let i = 0; i < slides.length; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          setCurrentSlideIndex(i);
+          console.log('INDEX =', i);
+          await generateScript(i);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         }
-    if (presentStep === "generateScript")
+        fetchSlides();
+      }
+
+    if (presentStep === "generateScript") { 
       generateScriptForChatbot();
+    }
   }, [presentStep]); // Runs when step changes
 
 
@@ -140,6 +161,7 @@ export function ScriptingEditor() {
       .eq('id', currentWebinarId);
 
     setSaving(false);
+    toast.success('Scripts have been saved');
 
     if (error) {
       console.error('Error marking scripting as complete:', error);
@@ -228,7 +250,7 @@ export function ScriptingEditor() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium text-white">Script</h3>
                   <button
-                    onClick={generateScript}
+                    onClick={() => generateScript(currentSlideIndex)}
                     disabled={generating}
                     className="flex items-center space-x-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
                   >
@@ -239,7 +261,7 @@ export function ScriptingEditor() {
 
                 <textarea
                   value={currentSlide.script || ''}
-                  onChange={(e) => handleScriptChange(e.target.value)}
+                  onChange={(e) => handleScriptChange(e.target.value, currentSlideIndex)}
                   className="w-full h-[300px] bg-gray-800 text-white border border-gray-700 rounded-lg p-4 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   placeholder="Write or generate a script for this slide..."
                 />

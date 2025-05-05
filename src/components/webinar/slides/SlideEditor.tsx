@@ -30,6 +30,7 @@ export function SlideEditor() {
 
   useEffect(() => {
     const fetchSlides = async () => {
+      if (!currentWebinarId) return;
       try {
         const slidesData = await queries.getSlides(currentWebinarId);
         console.log('Slides data in Slide Editor:', slidesData);
@@ -51,9 +52,9 @@ export function SlideEditor() {
 
   useEffect(() => {
     const generateInitialSlides = async () => {
-      if (!knowledgeBase) return;
+      if (!knowledgeBase || !generateSlides) return;
+
       console.log('GenerateSlides:', generateSlides);
-      if (!generateSlides) return;
 
       // Start Generating Slides
       setIsGenerating(true);
@@ -151,6 +152,7 @@ export function SlideEditor() {
 
     if (error) {
       console.error('Error marking scripting as incomplete:', error);
+      toast.error('Failed to mark scripting as incomplete');
       return;
     }
 
